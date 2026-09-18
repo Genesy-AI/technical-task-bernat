@@ -1,4 +1,5 @@
 import Papa from 'papaparse'
+import { ISO_3166_1_ALPHA_2_CODES } from './isoCountryCodes'
 
 export interface CsvLead {
   firstName: string
@@ -15,6 +16,14 @@ export interface CsvLead {
 export const isValidEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return emailRegex.test(email)
+}
+
+export const isValidCountryCode = (countryCode: string): boolean => {
+  return ISO_3166_1_ALPHA_2_CODES.has(normalizeCountryCode(countryCode))
+}
+
+export const normalizeCountryCode = (countryCode: string): string => {
+  return countryCode.trim().toUpperCase()
 }
 
 export const parseCsv = (content: string): CsvLead[] => {
@@ -88,12 +97,16 @@ export const parseCsv = (content: string): CsvLead[] => {
     } else if (!isValidEmail(lead.email)) {
       errors.push('Invalid email format')
     }
+    if (lead.countryCode && !isValidCountryCode(lead.countryCode)) {
+      errors.push('Invalid country code. Must be a 2-letter ISO 3166-1 code (e.g. US)')
+    }
 
     data.push({
       ...lead,
       firstName: lead.firstName || '',
       lastName: lead.lastName || '',
       email: lead.email || '',
+      countryCode: lead.countryCode ? normalizeCountryCode(lead.countryCode) : undefined,
       isValid: errors.length === 0,
       errors,
     } as CsvLead)
