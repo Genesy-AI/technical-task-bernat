@@ -4,6 +4,12 @@ import { Connection, Client } from '@temporalio/client'
 import { verifyEmailWorkflow } from './workflows'
 import { generateMessageFromTemplate } from './utils/messageGenerator'
 import { runTemporalWorker } from './worker'
+import {
+  TEMPORAL_ADDRESS,
+  TEMPORAL_NAMESPACE,
+  TEMPORAL_TASK_QUEUE,
+  VERIFY_EMAIL_WORKFLOW_EXECUTION_TIMEOUT,
+} from './temporalConfig'
 const prisma = new PrismaClient()
 const app = express()
 app.use(express.json())
@@ -273,38 +279,44 @@ app.post('/leads/verify-emails', async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'No leads found with the provided IDs' })
     }
 
-    const connection = await Connection.connect({ address: 'localhost:7233' })
-    const client = new Client({ connection, namespace: 'default' })
+    const connection = await Connection.connect({ address: TEMPORAL_ADDRESS })
+    const client = new Client({ connection, namespace: TEMPORAL_NAMESPACE })
 
     let verifiedCount = 0
     const results: Array<{ leadId: number; emailVerified: boolean }> = []
     const errors: Array<{ leadId: number; leadName: string; error: string }> = []
 
-    for (const lead of leads) {
-      try {
-        const isVerified = await client.workflow.execute(verifyEmailWorkflow, {
-          taskQueue: 'myQueue',
-          workflowId: `verify-email-${lead.id}-${Date.now()}`,
-          args: [lead.email],
-        })
+    try {
+      for (const lead of leads) {
+        try {
+          const isVerified = await client.workflow.execute(verifyEmailWorkflow, {
+            taskQueue: TEMPORAL_TASK_QUEUE,
+            workflowId: `verify-email-${lead.id}`,
+            args: [lead.email],
+            // Last-resort ceiling: even if the activity policy is ever loosened, the
+            // request cannot be blocked indefinitely.
+            workflowExecutionTimeout: VERIFY_EMAIL_WORKFLOW_EXECUTION_TIMEOUT,
+          })
 
-        await prisma.lead.update({
-          where: { id: lead.id },
-          data: { emailVerified: Boolean(isVerified) },
-        })
+          await prisma.lead.update({
+            where: { id: lead.id },
+            data: { emailVerified: Boolean(isVerified) },
+          })
 
-        results.push({ leadId: lead.id, emailVerified: isVerified })
-        verifiedCount += 1
-      } catch (error) {
-        errors.push({
-          leadId: lead.id,
-          leadName: `${lead.firstName} ${lead.lastName}`.trim(),
-          error: error instanceof Error ? error.message : 'Unknown error',
-        })
+          results.push({ leadId: lead.id, emailVerified: isVerified })
+          verifiedCount += 1
+        } catch (error) {
+          errors.push({
+            leadId: lead.id,
+            leadName: `${lead.firstName} ${lead.lastName}`.trim(),
+            error: error instanceof Error ? error.message : 'Unknown error',
+          })
+        }
       }
+    } finally {
+      // Always release the connection, including when a lead's workflow fails.
+      await connection.close()
     }
-
-    await connection.close()
 
     res.json({ success: true, verifiedCount, results, errors })
   } catch (error) {
