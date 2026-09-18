@@ -18,6 +18,7 @@ export const MessageTemplateModal: FC<MessageTemplateModalProps> = ({
   selectedLeadsCount,
 }) => {
   const [template, setTemplate] = useState('')
+  const [fieldFilter, setFieldFilter] = useState('')
   const [generationResult, setGenerationResult] = useState<{
     success: boolean
     generatedCount: number
@@ -40,6 +41,7 @@ export const MessageTemplateModal: FC<MessageTemplateModalProps> = ({
         toast.success(message)
         onClose()
         setTemplate('')
+        setFieldFilter('')
         setGenerationResult(null)
       } else {
         const successMessage =
@@ -74,6 +76,7 @@ export const MessageTemplateModal: FC<MessageTemplateModalProps> = ({
     if (!generateMessagesMutation.isPending) {
       onClose()
       setTemplate('')
+      setFieldFilter('')
       setGenerationResult(null)
     }
   }, [generateMessagesMutation.isPending, onClose])
@@ -107,16 +110,20 @@ export const MessageTemplateModal: FC<MessageTemplateModalProps> = ({
   }, [isOpen, handleClose])
 
   const availableFields = [
-    'firstName',
-    'lastName',
-    'email',
-    'jobTitle',
     'companyName',
     'countryCode',
+    'email',
+    'firstName',
+    'jobTitle',
+    'lastName',
+    'linkedinUrl',
     'phoneNumber',
     'yearsInRole',
-    'linkedinUrl',
   ]
+
+  const filteredFields = availableFields.filter((field) =>
+    field.toLowerCase().includes(fieldFilter.trim().toLowerCase())
+  )
 
   const insertField = (field: string) => {
     if (textareaRef.current) {
@@ -141,7 +148,7 @@ export const MessageTemplateModal: FC<MessageTemplateModalProps> = ({
       onClick={handleBackdropClick}
     >
       <div
-        className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6">
@@ -162,32 +169,53 @@ export const MessageTemplateModal: FC<MessageTemplateModalProps> = ({
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="message-template" className="block text-sm font-medium text-gray-700 mb-2">
-                Message Template
-              </label>
-              <div className="space-y-3">
-                <div className="flex flex-wrap gap-2">
-                  <span className="text-sm text-gray-600">Insert field:</span>
-                  {availableFields.map((field) => (
-                    <button
-                      key={field}
-                      type="button"
-                      onClick={() => insertField(field)}
-                      className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded hover:bg-blue-200 transition-colors"
-                    >
-                      {`{${field}}`}
-                    </button>
-                  ))}
+              <div className="flex flex-col-reverse gap-3 min-[601px]:h-56 min-[601px]:flex-row">
+                <div className="flex h-44 flex-col min-[601px]:h-auto min-[601px]:w-44 min-[601px]:shrink-0">
+                  <span className="mb-2 text-sm font-medium text-gray-700">Insert field</span>
+                  <div className="flex min-h-0 flex-1 flex-col border border-gray-300 rounded-md overflow-hidden">
+                    <input
+                      type="text"
+                      value={fieldFilter}
+                      onChange={(e) => setFieldFilter(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') e.preventDefault()
+                      }}
+                      placeholder="Filter fields..."
+                      aria-label="Filter fields"
+                      className="px-2 py-1.5 text-xs border-b border-gray-300 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-blue-500"
+                    />
+                    <div className="flex-1 overflow-y-auto p-2 space-y-1">
+                      {filteredFields.length === 0 ? (
+                        <p className="px-1 py-1 text-xs text-gray-400">No matching fields</p>
+                      ) : (
+                        filteredFields.map((field) => (
+                          <button
+                            key={field}
+                            type="button"
+                            onClick={() => insertField(field)}
+                            className="block w-full px-2 py-1 text-left text-xs bg-blue-100 text-blue-800 rounded hover:bg-blue-200 transition-colors truncate"
+                          >
+                            {`{${field}}`}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <textarea
-                  ref={textareaRef}
-                  id="message-template"
-                  value={template}
-                  onChange={(e) => setTemplate(e.target.value)}
-                  placeholder="Enter your message template here. Use {fieldName} to insert dynamic values.&#10;&#10;Example: Hi {firstName}, I noticed you work at {companyName} as a {jobTitle}. Would you be interested in..."
-                  className="w-full h-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                  required
-                />
+                <div className="flex flex-col min-[601px]:flex-1">
+                  <label htmlFor="message-template" className="mb-2 text-sm font-medium text-gray-700">
+                    Message Template
+                  </label>
+                  <textarea
+                    ref={textareaRef}
+                    id="message-template"
+                    value={template}
+                    onChange={(e) => setTemplate(e.target.value)}
+                    placeholder="Enter your message template here. Use {fieldName} to insert dynamic values.&#10;&#10;Example: Hi {firstName}, I noticed you work at {companyName} as a {jobTitle}. Would you be interested in..."
+                    className="h-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none min-[601px]:h-auto min-[601px]:min-h-0 min-[601px]:flex-1"
+                    required
+                  />
+                </div>
               </div>
               <p className="mt-2 text-sm text-gray-500">
                 Use curly braces around field names (e.g., {`{firstName}`}) to insert dynamic values. If a
