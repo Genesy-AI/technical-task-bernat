@@ -21,6 +21,15 @@ app.use(function (req, res, next) {
   next()
 })
 
+// Years in role arrives as a string from CSV imports and as a number from JSON clients.
+// Anything that is not a finite number (empty string, null, 'n/a') is stored as NULL.
+const toNullableInt = (value: unknown): number | null => {
+  const raw = String(value ?? '').trim()
+  if (!raw) return null
+  const parsed = Number(raw)
+  return Number.isFinite(parsed) ? Math.trunc(parsed) : null
+}
+
 app.post('/leads', async (req: Request, res: Response) => {
   const { name, lastName, email } = req.body
 
@@ -229,6 +238,9 @@ app.post('/leads/bulk', async (req: Request, res: Response) => {
             jobTitle: lead.jobTitle ? lead.jobTitle.trim() : null,
             countryCode: lead.countryCode ? lead.countryCode.trim() : null,
             companyName: lead.companyName ? lead.companyName.trim() : null,
+            phoneNumber: lead.phoneNumber ? String(lead.phoneNumber).trim() : null,
+            yearsInRole: toNullableInt(lead.yearsInRole),
+            linkedinUrl: lead.linkedinUrl ? String(lead.linkedinUrl).trim() : null,
           },
         })
         importedCount++

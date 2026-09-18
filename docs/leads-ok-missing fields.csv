@@ -1,9 +1,9 @@
-firstName,lastName,email,jobTitle,countryCode,companyName,yearsInRole,phoneNumber
-Elizabeth,,stacey43@yahoo.com,Agricultural consultant,TN,NextGen Solutions,5,531-051-4908x367
-Jeffrey,Williams,,IT technical support officer,MG,Elite Marketing Group,10,+1-444-818-4212
-Virginia,Jennings,frostthomas@hotmail.com,,CM,NextGen Solutions,2,+1-889-907-8869x213
-Margaret,Wilson,yukim@medina-grimes.com,Analytical chemist,,NextGen Solutions,10,001-617-773-8594
-Susan,Holt,jodybutler@yahoo.com,"Engineer, manufacturing systems",IR,,5,756-913-5693
-Meghan,Glover,douglas30@yahoo.com,"Sound technician, broadcasting/film/video",NI,Creative Insights Co.,2,1601140330
-Phyllis,Williams,melissa10@yahoo.com,Clinical cytogeneticist,TO,Creative Insights Co.,,
-Maurici,,,,,,,
+firstName,lastName,email,jobTitle,countryCode,companyName,yearsInRole,phoneNumber,linkedinUrl
+Elizabeth,,stacey43@yahoo.com,Agricultural consultant,TN,NextGen Solutions,5,531-051-4908x367,https://www.linkedin.com/in/elizabeth
+Jeffrey,Williams,,IT technical support officer,MG,Elite Marketing Group,10,+1-444-818-4212,linkedin.com/in/jeffrey-williams
+Virginia,Jennings,frostthomas@hotmail.com,,CM,NextGen Solutions,2,+1-889-907-8869x213,https://es.linkedin.com/in/virginia-jennings?trk=public_profile
+Margaret,Wilson,yukim@medina-grimes.com,Analytical chemist,,NextGen Solutions,10,001-617-773-8594,http://www.linkedin.com/in/margaret-wilson/
+Susan,Holt,jodybutler@yahoo.com,"Engineer, manufacturing systems",IR,,5,756-913-5693,susan-holt
+Meghan,Glover,douglas30@yahoo.com,"Sound technician, broadcasting/film/video",NI,Creative Insights Co.,2,1601140330,https://www.linkedin.com/in/meghan-glover
+Phyllis,Williams,melissa10@yahoo.com,Clinical cytogeneticist,TO,Creative Insights Co.,,,linkedin.com/in/phyllis-williams
+Maurici,,,,,,,,https://es.linkedin.com/in/maurici?trk=public_profile

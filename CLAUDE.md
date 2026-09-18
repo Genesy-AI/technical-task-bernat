@@ -164,8 +164,13 @@ configured. The practical consequence:
 
 - Put new logic in a **pure, exported function** and test it there. Parsing, validation, provider
   response normalization, retry/backoff decisions — all of these can be pure.
-- Handlers and components are currently verified by running the app. If you change a route, exercise
-  it manually (`curl localhost:4000/...`) and say so in your summary.
+- Handlers are currently verified by running the app. If you change a route, exercise it manually
+  (`curl localhost:4000/...`) and say so in your summary.
+- **Never run browser tests.** No Playwright/Puppeteer/Cypress, no headless-browser drivers, no
+  browser path of the `run` skill, no screenshots of the UI — none of it is set up here and it is
+  not wanted. Frontend changes are verified with `npx vitest run` (jsdom) and `npx tsc -b`; leave
+  anything that needs a real browser for the human to click through, and say in your summary which
+  UI changes you did not exercise.
 - Follow the existing test style: nested `describe` by behaviour group, one assertion-focused `it`
   each, explicit fixtures at the top of the file.
 
